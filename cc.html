@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Location Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        #footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #locate-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #locate-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #chart-container {
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        /* Responsive layout */
+        @media only screen and (max-width: 600px) {
+            #chart-container {
+                width: 100%;
+                padding: 0 10px;
+            }
+            #latitude-chart, #longitude-chart {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Kongu Engineering College</h1>
+        <h3>Cloud Computing Laboratory</h3>
+    </header>
+
+    <button id="locate-btn" onclick="getLocation()">Locate Me</button>
+
+    <div id="chart-container">
+        <iframe id="latitude-chart" width="450" height="260" style="border: 1px solid #cccccc;" src=""></iframe>
+        <iframe id="longitude-chart" width="450" height="260" style="border: 1px solid #cccccc; margin-top: 20px;" src=""></iframe>
+    </div>
+
+    <footer id="footer">
+        <p>&copy; 2024 Location Tracker</p>
+    </footer>
+
+    <script>
+        // Function to get user's location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Callback function to handle the retrieved position
+        function showPosition(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            sendToThingSpeak(latitude, longitude);
+        }
+
+        // Function to send data to ThingSpeak
+        function sendToThingSpeak(latitude, longitude) {
+            // You need to replace 'YOUR_API_KEY' with your actual ThingSpeak API key
+            var apiKey = 'WECCNA211J5BCQR8';
+            var url = 'https://api.thingspeak.com/update?api_key=' + apiKey + '&field1=' + latitude + '&field2=' + longitude;
+
+            // Send data to ThingSpeak
+            fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                console.log('Data sent to ThingSpeak successfully');
+                // Update chart URLs with authentication
+                document.getElementById('latitude-chart').src = 'https://thingspeak.com/channels/2518229/charts/1?api_key=WECCNA211J5BCQR8&bgcolor=%23ffffff&color=%23d62020&days=1&dynamic=true&title=Latitude+Data&type=line';
+                document.getElementById('longitude-chart').src = 'https://thingspeak.com/channels/2518229/charts/2?api_key=WECCNA211J5BCQR8&bgcolor=%23ffffff&color=%23d62020&days=1&dynamic=true&title=Longitude+Data&type=line';
+            })
+            .catch(error => {
+                console.error('Error sending data to ThingSpeak:', error);
+            });
+        }
+    </script>
+</body>
+</html>
